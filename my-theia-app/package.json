@@ -12,13 +12,16 @@
     "start:browser": "npm --prefix browser-app start",
     "start:electron": "npm --prefix electron-app start",
     "watch:browser": "lerna run --parallel watch --ignore electron-app",
-    "watch:electron": "lerna run --parallel watch --ignore browser-app",
-    "test": "cd widget && npm test"
+    "watch:electron": "lerna run --parallel watch --ignore browser-app"
   },
   "devDependencies": {
     "lerna": "^8.2.4"
   },
   "workspaces": [
-    "widget", "browser-app", "electron-app"
+    "progress-widget",
+    "browser-app",
+    "electron-app",
+    "../packages/*",
+    "../dev-packages/*"
   ]
 }

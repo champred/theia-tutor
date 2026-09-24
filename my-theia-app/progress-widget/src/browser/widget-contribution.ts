@@ -1,13 +1,13 @@
 import { injectable } from '@theia/core/shared/inversify';
 import { MenuModelRegistry } from '@theia/core';
-import { WidgetWidget } from './widget-widget';
+import { ProgressWidget } from './progress-widget';
 import { AbstractViewContribution } from '@theia/core/lib/browser';
 import { Command, CommandRegistry } from '@theia/core/lib/common/command';
 
-export const WidgetCommand: Command = { id: 'widget:command' };
+export const WidgetCommand: Command = { id: 'progress:command' };
 
 @injectable()
-export class WidgetContribution extends AbstractViewContribution<WidgetWidget> {
+export class WidgetContribution extends AbstractViewContribution<ProgressWidget> {
 
     /**
      * `AbstractViewContribution` handles the creation and registering
@@ -19,8 +19,8 @@ export class WidgetContribution extends AbstractViewContribution<WidgetWidget> {
      */
     constructor() {
         super({
-            widgetId: WidgetWidget.ID,
-            widgetName: WidgetWidget.LABEL,
+            widgetId: ProgressWidget.ID,
+            widgetName: ProgressWidget.LABEL,
             defaultWidgetOptions: { area: 'left' },
             toggleCommandId: WidgetCommand.id
         });

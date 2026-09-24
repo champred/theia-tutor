@@ -1,0 +1,79 @@
+:root {
+    --bg: #f5f7fb;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --line: #d7dde8;
+    --blue: #2563eb;
+    --green: #16a34a;
+    --red: #dc2626;
+    --panel: #fff;
+}
+
+#widget-container h2 {
+    color: var(--theia-ui-font-color1);
+    font-size: 12px;
+    font-weight: 400;
+    padding: 10px;
+    text-transform: uppercase;
+}
+
+.progress-wrap {
+    height: 110px;
+    padding: 18px 30px 10px;
+}
+
+.label-row {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+}
+
+.progress {
+    height: 5px;
+    margin: 20px 30px 0;
+    position: relative;
+    background: var(--line);
+}
+
+.progress::before {
+    content: "";
+    display: block;
+    height: 100%;
+    width: var(--percent);
+    background: var(--blue);
+}
+
+.stages {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    top: -17px;
+}
+
+.stage {
+    width: 80px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.bubble {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 7px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--line);
+    color: #fff;
+    font-weight: 800;
+}
+
+.stage.done .bubble {
+    background: var(--blue);
+}
+
+.stage.done {
+    color: var(--blue);
+    font-weight: 700;
+}

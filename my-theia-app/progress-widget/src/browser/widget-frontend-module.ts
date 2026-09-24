@@ -1,16 +1,16 @@
 import { ContainerModule } from '@theia/core/shared/inversify';
-import { WidgetWidget } from './widget-widget';
+import { ProgressWidget } from './progress-widget';
 import { WidgetContribution } from './widget-contribution';
 import { bindViewContribution, FrontendApplicationContribution, WidgetFactory } from '@theia/core/lib/browser';
-
+// @ts-expect-error
 import '../../src/browser/style/index.css';
 
 export default new ContainerModule(bind => {
     bindViewContribution(bind, WidgetContribution);
     bind(FrontendApplicationContribution).toService(WidgetContribution);
-    bind(WidgetWidget).toSelf();
+    bind(ProgressWidget).toSelf();
     bind(WidgetFactory).toDynamicValue(ctx => ({
-        id: WidgetWidget.ID,
-        createWidget: () => ctx.container.get<WidgetWidget>(WidgetWidget)
+        id: ProgressWidget.ID,
+        createWidget: () => ctx.container.get<ProgressWidget>(ProgressWidget)
     })).inSingletonScope();
 });
