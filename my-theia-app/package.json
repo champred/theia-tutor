@@ -19,6 +19,7 @@
   },
   "workspaces": [
     "progress-widget",
+    "test-widget",
     "browser-app",
     "electron-app",
     "../packages/*",

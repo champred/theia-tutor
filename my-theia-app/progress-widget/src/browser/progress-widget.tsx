@@ -29,9 +29,7 @@ export class ProgressWidget extends ReactWidget {
 
     render(): React.ReactElement {
         return <div id="widget-container">
-            <div className="label-row">
-                <span>Assignment Progress</span>
-            </div>
+            <h2>Assignment Progress</h2>
             <ProgressBar />
         </div>
     }
