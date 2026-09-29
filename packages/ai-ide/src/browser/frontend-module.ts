@@ -113,7 +113,7 @@ import { bindRootContributionProvider, CommandContribution, PreferenceContributi
 import { BrowserAutomation, browserAutomationPath } from '../common/browser-automation-protocol';
 import { GitHubRepoService, githubRepoServicePath } from '../common/github-repo-protocol';
 import { CloseBrowserProvider, IsBrowserRunningProvider, LaunchBrowserProvider, QueryDomProvider } from './app-tester-chat-functions';
-import { GetSkillFileContent } from './skill-file-functions';
+import { GetSkillFileContent, ListSkills } from './skill-file-functions';
 import { aiIdePreferenceSchema } from '../common/ai-ide-preferences';
 import { AIActivationService } from '@theia/ai-core/lib/browser';
 import { AIIdeActivationServiceImpl } from './ai-ide-activation-service';
@@ -152,6 +152,12 @@ import { AIFirstPerspectiveContribution } from './ai-first-perspective-contribut
 import { ChatSessionListService } from './chat-session-list-service';
 import { AISessionsWidget } from './ai-sessions-widget';
 import { AISessionsViewContribution } from './ai-sessions-view-contribution';
+import { CommitMessageAgent } from './commit-message-agent';
+import { CommitMessageRunner } from './commit-message-runner';
+import { CommitMessageCommandContribution } from './commit-message-command-contribution';
+import { GetGitChangesTool } from './git-changes-tool';
+import { AiAwareScmCommitWidget } from './ai-aware-scm-commit-widget';
+import { ScmCommitWidget } from '@theia/scm/lib/browser/scm-commit-widget';
 
 export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bind(PreferenceContribution).toConstantValue({ schema: aiIdePreferenceSchema });
@@ -240,6 +246,7 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bindToolProvider(FileDiagnosticProvider, bind);
     bindToolProvider(FindFilesByPattern, bind);
     bindToolProvider(GetSkillFileContent, bind);
+    bindToolProvider(ListSkills, bind);
     bind(WorkspaceFunctionScope).toSelf().inSingletonScope();
     bindToolProvider(WorkspaceSearchProvider, bind);
 
@@ -395,4 +402,16 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
         .inSingletonScope();
     bindViewContribution(bind, AISessionsViewContribution);
     bind(TabBarToolbarContribution).toService(AISessionsViewContribution);
+
+    // CommitMessageAgent is a plain (non-chat) `Agent`: it is driven exclusively from the SCM
+    // commit widget via `CommitMessageRunner`, so it does not appear in chat `@`-mention
+    // completion or the chat agent list. The `Agent` binding registers its prompt fragments
+    // with the prompt service.
+    bind(CommitMessageAgent).toSelf().inSingletonScope();
+    bind(Agent).toService(CommitMessageAgent);
+    bindToolProvider(GetGitChangesTool, bind);
+    bind(CommitMessageRunner).toSelf().inSingletonScope();
+    bind(CommitMessageCommandContribution).toSelf().inSingletonScope();
+    bind(CommandContribution).toService(CommitMessageCommandContribution);
+    rebind(ScmCommitWidget).to(AiAwareScmCommitWidget);
 });
