@@ -3,6 +3,21 @@ import { injectable, postConstruct, inject } from '@theia/core/shared/inversify'
 import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import { MessageService } from '@theia/core';
 import { Message } from '@theia/core/lib/browser';
+import { PromptService } from '@theia/ai-core';
+import { ChatService, ChatAgentService, ChatAgentLocation } from '@theia/ai-chat';
+import {
+    TUTOR_PHASE_1_PROMPT_ID,
+    TUTOR_PHASE_2_PROMPT_ID,
+    TUTOR_PHASE_3_PROMPT_ID,
+    tutorSystemVariants
+} from '../common/tutor-prompt-template';
+import { TutorChatAgentId } from '../common/tutor-chat-agent';
+
+const phases: {[key: string]: string} = {
+    '1': TUTOR_PHASE_1_PROMPT_ID,
+    '2': TUTOR_PHASE_2_PROMPT_ID,
+    '3': TUTOR_PHASE_3_PROMPT_ID
+}
 
 @injectable()
 export class ProgressWidget extends ReactWidget {
@@ -12,6 +27,15 @@ export class ProgressWidget extends ReactWidget {
 
     @inject(MessageService)
     protected readonly messageService!: MessageService;
+
+    @inject(PromptService)
+    protected readonly promptService!: PromptService;
+
+    @inject(ChatService)
+    protected readonly chatService!: ChatService;
+
+    @inject(ChatAgentService)
+    protected readonly chatAgentService!: ChatAgentService;
 
     @postConstruct()
     protected init(): void {
@@ -27,15 +51,28 @@ export class ProgressWidget extends ReactWidget {
         this.update();
     }
 
+    protected updateMode = async(mode: string) => {
+        const agent = this.chatAgentService.getAgent(TutorChatAgentId);
+        if (!agent) return;
+
+        this.chatService.createSession(
+            ChatAgentLocation.Panel,
+            {focus: true},
+            agent
+        )
+
+        await this.promptService.updateSelectedVariantId(
+            TutorChatAgentId,
+            tutorSystemVariants.id,
+            phases[mode]
+        )
+    }
+
     render(): React.ReactElement {
         return <div id="widget-container">
             <h2>Assignment Progress</h2>
-            <ProgressBar />
+            <ProgressBar update={this.updateMode} />
         </div>
-    }
-
-    protected displayMessage(): void {
-        this.messageService.info('Congratulations: Widget Widget Successfully Created!');
     }
 
     protected onActivateRequest(msg: Message): void {
@@ -60,14 +97,17 @@ function ProgressStage({ number, label, active, click }: {
     </div>
 }
 
-function ProgressBar(): React.ReactElement {
+function ProgressBar({update}: {update: (mode: string)=>Promise<void>}): React.ReactElement {
     const [percent, setPercent] = React.useState(0);
     return <>
         <div className="progress" style={{ '--percent': percent + "%" } as React.CSSProperties}></div>
         <div className="stages">
-            <ProgressStage number='1' label="Conceptual Logic" active={percent > 0} click={() => setPercent(1)} />
-            <ProgressStage number='2' label="Algorithm Design" active={percent > 49} click={() => setPercent(50)} />
-            <ProgressStage number='3' label="Code Implementation" active={percent > 99} click={() => setPercent(100)} />
+            <ProgressStage number='1' label="Conceptual Logic" active={percent > 0}
+                click={()=>update('1').then(()=>setPercent(1))} />
+            <ProgressStage number='2' label="Algorithm Design" active={percent > 49}
+                click={()=>update('2').then(()=>setPercent(50))} />
+            <ProgressStage number='3' label="Implement Code" active={percent > 99}
+                click={()=>update('3').then(()=>setPercent(100))} />
         </div>
     </>
 }
