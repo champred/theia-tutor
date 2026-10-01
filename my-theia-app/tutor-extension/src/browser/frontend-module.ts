@@ -34,5 +34,6 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     rebind(AIChatInputConfiguration).toConstantValue({
         showPinnedAgent: false,
     });
-    
+    bind(DisableAgentContribution).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(DisableAgentContribution);
 });
