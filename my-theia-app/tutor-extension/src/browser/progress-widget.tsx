@@ -4,7 +4,12 @@ import { ReactWidget } from '@theia/core/lib/browser/widgets/react-widget';
 import { MessageService } from '@theia/core';
 import { Message } from '@theia/core/lib/browser';
 import { PromptService } from '@theia/ai-core';
-import { ChatService, ChatAgentService, ChatAgentLocation } from '@theia/ai-chat';
+import {
+    ChatService,
+    ChatAgentService,
+    ChatAgentLocation,
+    ChatSession
+} from '@theia/ai-chat';
 import {
     TUTOR_PHASE_1_PROMPT_ID,
     TUTOR_PHASE_2_PROMPT_ID,
@@ -37,6 +42,8 @@ export class ProgressWidget extends ReactWidget {
     @inject(ChatAgentService)
     protected readonly chatAgentService!: ChatAgentService;
 
+    private currentSession: ChatSession | null = null;
+
     @postConstruct()
     protected init(): void {
         this.doInit()
@@ -55,7 +62,7 @@ export class ProgressWidget extends ReactWidget {
         const agent = this.chatAgentService.getAgent(TutorChatAgentId);
         if (!agent) return;
 
-        this.chatService.createSession(
+        this.currentSession = this.chatService.createSession(
             ChatAgentLocation.Panel,
             {focus: true},
             agent
@@ -66,6 +73,10 @@ export class ProgressWidget extends ReactWidget {
             tutorSystemVariants.id,
             phases[mode]
         )
+
+        await this.chatService.sendRequest(this.currentSession.id, {
+            text: `Let's start on Phase ${mode}.`
+        })
     }
 
     render(): React.ReactElement {

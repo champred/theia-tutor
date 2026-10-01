@@ -1,5 +1,5 @@
 {
-  "name": "progress-widget",
+  "name": "tutor-extension",
   "keywords": [
     "theia-extension"
   ],
@@ -31,7 +31,7 @@
   },
   "theiaExtensions": [
     {
-      "frontend": "lib/browser/widget-frontend-module"
+      "frontend": "lib/browser/frontend-module"
     }
   ]
 }

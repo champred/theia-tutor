@@ -1,6 +1,7 @@
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { ProgressWidget } from './progress-widget';
-import { WidgetContribution } from './widget-contribution';
+import { TestWidget } from './test-widget';
+import { ProgressWidgetContribution, TestWidgetContribution } from './widget-contribution';
 import { Agent } from '@theia/ai-core';
 import { ChatAgent } from '@theia/ai-chat';
 import { TutorChatAgent } from '../common/tutor-chat-agent';
@@ -8,19 +9,30 @@ import { AIChatInputConfiguration } from '@theia/ai-chat-ui/lib/browser/chat-inp
 import { bindViewContribution, FrontendApplicationContribution, WidgetFactory } from '@theia/core/lib/browser';
 // @ts-ignore
 import '../../src/browser/style/index.css';
+import { DisableAgentContribution } from './disable-agent-contribution';
 
 export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
-    bindViewContribution(bind, WidgetContribution);
-    bind(FrontendApplicationContribution).toService(WidgetContribution);
+    bindViewContribution(bind, ProgressWidgetContribution);
+    bind(FrontendApplicationContribution).toService(ProgressWidgetContribution);
     bind(ProgressWidget).toSelf();
     bind(WidgetFactory).toDynamicValue(ctx => ({
         id: ProgressWidget.ID,
         createWidget: () => ctx.container.get<ProgressWidget>(ProgressWidget)
     })).inSingletonScope();
+
+    bindViewContribution(bind, TestWidgetContribution);
+    bind(FrontendApplicationContribution).toService(TestWidgetContribution);
+    bind(TestWidget).toSelf();
+    bind(WidgetFactory).toDynamicValue(ctx => ({
+        id: TestWidget.ID,
+        createWidget: () => ctx.container.get<TestWidget>(TestWidget)
+    })).inSingletonScope();
+
     bind(TutorChatAgent).toSelf().inSingletonScope();
     bind(Agent).toService(TutorChatAgent);
     bind(ChatAgent).toService(TutorChatAgent);
     rebind(AIChatInputConfiguration).toConstantValue({
         showPinnedAgent: false,
     });
+    
 });

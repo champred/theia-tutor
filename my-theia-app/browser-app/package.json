@@ -21,8 +21,7 @@
     "@theia/ai-ollama": "1.76.0",
     "@theia/ai-openai": "1.76.0",
     "@theia/ai-tool-sketchpad": "1.76.0",
-    "progress-widget": "0.0.0",
-    "test-widget": "0.0.0"
+    "tutor-extension": "0.0.0"
   },
   "devDependencies": {
     "@theia/cli": "1.76.0"
