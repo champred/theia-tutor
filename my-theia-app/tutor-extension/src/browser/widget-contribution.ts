@@ -23,7 +23,7 @@ export class ProgressWidgetContribution extends AbstractViewContribution<Progres
         super({
             widgetId: ProgressWidget.ID,
             widgetName: ProgressWidget.LABEL,
-            defaultWidgetOptions: { area: 'left' },
+            defaultWidgetOptions: { area: 'bottom' },
             toggleCommandId: ProgressWidgetCommand.id
         });
     }

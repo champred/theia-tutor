@@ -10,6 +10,7 @@ import { bindViewContribution, FrontendApplicationContribution, WidgetFactory } 
 // @ts-ignore
 import '../../src/browser/style/index.css';
 import { DisableAgentContribution } from './disable-agent-contribution';
+import { bindTestSample } from './tutor-test-contribution';
 
 export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bindViewContribution(bind, ProgressWidgetContribution);
@@ -36,4 +37,6 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     });
     bind(DisableAgentContribution).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(DisableAgentContribution);
+
+    bindTestSample(bind);
 });
