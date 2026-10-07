@@ -138,3 +138,43 @@
     color: var(--muted);
     font-weight: 500;
 }
+
+.tutor-tests-container {
+    padding-bottom: 12px;
+}
+.tutor-tests-toolbar {
+    display: flex;
+    gap: 8px;
+    padding: 0 10px 10px;
+}
+.tutor-tests-list {
+    padding: 0 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.tutor-test-case {
+    padding: 10px;
+    border: 1px solid var(--theia-panel-border);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.tutor-test-case label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+}
+.tutor-test-case-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.tutor-test-case input,
+.tutor-test-case textarea,
+.tutor-test-case select {
+    width: 100%;
+    box-sizing: border-box;
+}

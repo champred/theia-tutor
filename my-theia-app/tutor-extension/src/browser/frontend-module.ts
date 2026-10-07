@@ -6,10 +6,19 @@ import { Agent } from '@theia/ai-core';
 import { ChatAgent } from '@theia/ai-chat';
 import { TutorChatAgent } from '../common/tutor-chat-agent';
 import { AIChatInputConfiguration } from '@theia/ai-chat-ui/lib/browser/chat-input-widget';
-import { bindViewContribution, FrontendApplicationContribution, WidgetFactory } from '@theia/core/lib/browser';
+import { 
+    bindViewContribution,
+    FrontendApplicationContribution,
+    WidgetFactory,
+    RemoteConnectionProvider,
+    ServiceConnectionProvider
+} from '@theia/core/lib/browser';
 // @ts-ignore
 import '../../src/browser/style/index.css';
 import { DisableAgentContribution } from './disable-agent-contribution';
+import { bindTutorTests } from './tutor-test-contribution';
+import { TutorTestRunnerService, tutorTestRunnerServicePath } from '../common/tutor-test-runner-service';
+import {  } from '@theia/core/lib/browser';
 
 export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bindViewContribution(bind, ProgressWidgetContribution);
@@ -36,4 +45,9 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     });
     bind(DisableAgentContribution).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(DisableAgentContribution);
+    bind(TutorTestRunnerService).toDynamicValue(ctx => {
+        const provider = ctx.container.get<ServiceConnectionProvider>(RemoteConnectionProvider);
+        return provider.createProxy<TutorTestRunnerService>(tutorTestRunnerServicePath);
+    }).inSingletonScope();
+    bindTutorTests(bind);
 });

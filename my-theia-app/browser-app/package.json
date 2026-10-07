@@ -16,7 +16,6 @@
     "@theia/workspace": "1.76.0",
     "@theia/ai-core-ui": "1.76.0",
     "@theia/ai-chat-ui": "1.76.0",
-    "@theia/ai-history": "1.76.0",
     "@theia/ai-ide": "1.76.0",
     "@theia/ai-ollama": "1.76.0",
     "@theia/ai-openai": "1.76.0",
