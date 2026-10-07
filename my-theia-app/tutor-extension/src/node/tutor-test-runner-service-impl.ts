@@ -27,16 +27,19 @@ export class DeterministicTutorTestCaseExecutor implements TutorTestCaseExecutor
             ? actualOutput === testCase.expectedOutput
             : actualOutput.includes(testCase.expectedOutput);
 
-        const output = [
-            `Input: ${testCase.input}`,
-            `Expected (${testCase.matchMode}): ${testCase.expectedOutput}`,
-            `Actual: ${actualOutput}`
-        ];
+        const output = `**${testCase.title}**
+
+            Input: ${testCase.input}
+
+            Expected (${testCase.matchMode}): ${testCase.expectedOutput}
+
+            Actual: ${actualOutput}
+        `;
 
         if (passed) {
             return {
                 state: 'passed',
-                output,
+                output: [output],
                 actualOutput,
                 expectedOutput: testCase.expectedOutput
             };
@@ -44,7 +47,7 @@ export class DeterministicTutorTestCaseExecutor implements TutorTestCaseExecutor
 
         return {
             state: 'failed',
-            output,
+            output: [output],
             actualOutput,
             expectedOutput: testCase.expectedOutput,
             message: 'Output did not match expectation.'

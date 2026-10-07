@@ -33,7 +33,7 @@ export class TestWidget extends ReactWidget {
         this.title.label = TestWidget.LABEL;
         this.title.caption = TestWidget.LABEL;
         this.title.closable = true;
-        this.title.iconClass = 'fa fa-vial';
+        this.title.iconClass = 'codicon codicon-tasklist';
         await this.reload();
     }
 

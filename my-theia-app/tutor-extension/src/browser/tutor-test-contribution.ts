@@ -5,6 +5,7 @@ import { TutorTestCase } from '../common/tutor-test-case-schema';
 import { TutorTestRunnerService } from '../common/tutor-test-runner-service';
 import { TestControllerImpl, TestItemImpl, TestRunImpl } from './test-controller';
 import { TutorTestCaseLoadResult, TutorTestCaseStore } from '../common/tutor-test-case-store';
+import { ChatService } from '@theia/ai-chat';
 
 export namespace TutorTestCommands {
     export const reloadTestCases = {
@@ -24,6 +25,9 @@ export class TutorTestContribution implements TestContribution, CommandContribut
 
     @inject(ILogger) @named('tutor-extension:TutorTestContribution')
     protected readonly logger!: ILogger;
+
+    @inject(ChatService)
+    protected readonly chatService!: ChatService
 
     protected readonly testController = new TestControllerImpl('TutorTestController', 'Tutor Test Controller');
     protected nextRunId = 0;
@@ -51,13 +55,23 @@ export class TutorTestContribution implements TestContribution, CommandContribut
             run: (name: string, included: readonly TestItem[], excluded: readonly TestItem[]) => {
                 const runId = this.nextRunId++;
                 const runItems = this.collectRunnableItems(included, excluded);
-                this.testController.addRun(new TestRunImpl(
+                const testRun = new TestRunImpl(
                     this.testController,
                     `tutor-run-id-${runId}`,
                     name || `tutor-run-${runId}`,
                     runItems,
                     this.testRunnerService
-                ));
+                );
+                this.testController.addRun(testRun);
+                let completed = 0;
+                testRun.onDidChangeTestOutput(_ => {
+                    const sessId = this.chatService.getActiveSession()?.id;
+                    if (++completed === runItems.length && sessId) {
+                        this.chatService.sendRequest(sessId, {
+                            text: testRun.getOutput().map(o => o.output).join('')
+                        })
+                    }
+                });
             },
             configure: (): void => {
                 // no configuration yet
@@ -84,9 +98,10 @@ export class TutorTestContribution implements TestContribution, CommandContribut
         }
 
         const fileUri = loadResult.fileUri;
-        let testItems: TestItemImpl[] = [];
-        if (fileUri) testItems = loadResult.testCases.map((testCase: TutorTestCase, index: number) => this.toTestItem(fileUri, testCase, index));
-        this.testController.replaceAll(testItems);
+        if (fileUri) {
+            const grouped = this.groupByPrefix(fileUri, loadResult.testCases);
+            this.testController.replaceAll(grouped);
+        }
         return loadResult;
     }
 
@@ -104,7 +119,19 @@ export class TutorTestContribution implements TestContribution, CommandContribut
 
     protected collectRunnableItems(included: readonly TestItem[], excluded: readonly TestItem[]): TestItemImpl[] {
         const excludedIds = new Set(excluded.map(item => item.id));
-        const allLeafItems = this.testController.tests.filter(item => item.tests.length === 0 && item.testCase);
+        const allLeafItems: TestItemImpl[] = [];
+
+        const collectLeafs = (items: readonly TestItemImpl[]) => {
+            for (const item of items) {
+                if (item.tests.length === 0 && item.testCase) {
+                    allLeafItems.push(item);
+                } else {
+                    collectLeafs(item.tests as TestItemImpl[]);
+                }
+            }
+        };
+
+        collectLeafs(this.testController.tests);
 
         if (included.length === 0) {
             return allLeafItems.filter(item => !excludedIds.has(item.id));
@@ -113,13 +140,41 @@ export class TutorTestContribution implements TestContribution, CommandContribut
         const includedIds = new Set<string>();
         included.forEach(item => {
             if (item instanceof TestItemImpl && item.tests.length > 0) {
-                item.tests.forEach(child => includedIds.add(child.id));
+                const recurse = (node: TestItemImpl) => {
+                    if (node.tests.length === 0 && node.testCase) {
+                        includedIds.add(node.id);
+                    } else {
+                        node.tests.forEach(child => recurse(child as TestItemImpl));
+                    }
+                };
+                recurse(item);
                 return;
             }
             includedIds.add(item.id);
         });
 
         return allLeafItems.filter(item => includedIds.has(item.id) && !excludedIds.has(item.id));
+    }
+
+    protected groupByPrefix(fileUri: URI, testCases: readonly TutorTestCase[]): TestItemImpl[] {
+        const groups = new Map<string, TestItemImpl>();
+
+        for (const [index, testCase] of testCases.entries()) {
+            const prefix = testCase.title.split(':')[0]?.trim() ?? 'Other';
+
+            let parent = groups.get(prefix);
+            if (!parent) {
+                parent = new TestItemImpl(fileUri, `group-${prefix.replace(/\s+/g, '-')}`);
+                parent.label = prefix;
+                parent.description = 'Task group';
+                groups.set(prefix, parent);
+            }
+
+            const item = this.toTestItem(fileUri, testCase, index);
+            parent._children.add(item); // same file/class can do this
+        }
+
+        return [...groups.values()];
     }
 }
 
