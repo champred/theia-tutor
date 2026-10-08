@@ -27,13 +27,10 @@ export class DeterministicTutorTestCaseExecutor implements TutorTestCaseExecutor
             ? actualOutput === testCase.expectedOutput
             : actualOutput.includes(testCase.expectedOutput);
 
-        const output = `**${testCase.title}**
-
-            Input: ${testCase.input}
-
-            Expected (${testCase.matchMode}): ${testCase.expectedOutput}
-
-            Actual: ${actualOutput}
+        const output = `${testCase.title}
+Input: ${testCase.input}
+Expected (${testCase.matchMode}): ${testCase.expectedOutput}
+Actual: ${actualOutput}
         `;
 
         if (passed) {

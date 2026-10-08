@@ -6,6 +6,8 @@ import { TutorTestRunnerService } from '../common/tutor-test-runner-service';
 import { TestControllerImpl, TestItemImpl, TestRunImpl } from './test-controller';
 import { TutorTestCaseLoadResult, TutorTestCaseStore } from '../common/tutor-test-case-store';
 import { ChatService } from '@theia/ai-chat';
+import { PromptService, ToolProvider, ToolRequest } from '@theia/ai-core';
+import { tutorSystemVariants } from '../common/tutor-prompt-template';
 
 export namespace TutorTestCommands {
     export const reloadTestCases = {
@@ -28,6 +30,9 @@ export class TutorTestContribution implements TestContribution, CommandContribut
 
     @inject(ChatService)
     protected readonly chatService!: ChatService
+
+    @inject(PromptService)
+    protected readonly promptService!: PromptService
 
     protected readonly testController = new TestControllerImpl('TutorTestController', 'Tutor Test Controller');
     protected nextRunId = 0;
@@ -65,10 +70,13 @@ export class TutorTestContribution implements TestContribution, CommandContribut
                 this.testController.addRun(testRun);
                 let completed = 0;
                 testRun.onDidChangeTestOutput(_ => {
-                    const sessId = this.chatService.getActiveSession()?.id;
-                    if (++completed === runItems.length && sessId) {
-                        this.chatService.sendRequest(sessId, {
-                            text: testRun.getOutput().map(o => o.output).join('')
+                    const session = this.chatService.getActiveSession();
+                    const phase = this.promptService.getSelectedVariantId(tutorSystemVariants.id);
+                    TutorTestFunction.lastRun = testRun;
+                    if (++completed === runItems.length && session && phase?.endsWith('3')) {
+                        this.chatService.sendRequest(session.id, {
+                            displayText: "Here are my updated test cases",
+                            text: "~getTutorTests"
                         })
                     }
                 });
@@ -183,4 +191,29 @@ export function bindTutorTests(bind: interfaces.Bind): void {
     bind(TutorTestContribution).toSelf().inSingletonScope();
     bind(CommandContribution).toService(TutorTestContribution);
     bind(TestContribution).toService(TutorTestContribution);
+    bind(ToolProvider).to(TutorTestFunction);
+}
+
+@injectable()
+export class TutorTestFunction implements ToolProvider {
+   static readonly ID = 'getTutorTests';
+   static lastRun?: TestRunImpl;
+
+   getTool(): ToolRequest {
+       return {
+           id: TutorTestFunction.ID,
+           name: TutorTestFunction.ID,
+           description: 'Displays the results of the most recent test run',
+           parameters: {
+               properties: {}
+           },
+           handler: () => {
+                const content = TutorTestFunction.lastRun;
+                if (content) {
+                    return Promise.resolve(content.getOutput().map(o => o.output).join(''));
+                }
+                return Promise.resolve(undefined);
+           }
+       };
+   }
 }

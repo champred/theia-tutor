@@ -44,4 +44,5 @@ export class TutorChatAgent extends AbstractModeAwareChatAgent {
     override prompts = [tutorSystemVariants];
     protected override systemPromptId: string = tutorSystemVariants.id;
     // override iconClass: string = 'codicon codicon-comment';
+    override functions = ['getTutorTests'];
 }
