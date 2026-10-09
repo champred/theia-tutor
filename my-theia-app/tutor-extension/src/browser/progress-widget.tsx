@@ -17,6 +17,8 @@ import {
     tutorSystemVariants
 } from '../common/tutor-prompt-template';
 import { TutorChatAgentId } from '../common/tutor-chat-agent';
+import { FileService } from '@theia/filesystem/lib/browser/file-service';
+import { FileChangeType } from '@theia/filesystem/lib/common/files';
 
 const phases: {[key: string]: string} = {
     '1': TUTOR_PHASE_1_PROMPT_ID,
@@ -42,11 +44,26 @@ export class ProgressWidget extends ReactWidget {
     @inject(ChatAgentService)
     protected readonly chatAgentService!: ChatAgentService;
 
+    @inject(FileService)
+    protected readonly fileService!: FileService;
+
     private currentSession?: ChatSession;
 
     @postConstruct()
     protected init(): void {
-        this.doInit()
+        this.doInit();
+        this.fileService.onDidFilesChange(e => {
+            const phase = this.promptService.getSelectedVariantId(tutorSystemVariants.id)?.slice(-1);
+            for (let {resource, type} of e.changes) {
+                if (resource.path.name.includes("Solution") && phase === '3' &&
+                    type === FileChangeType.UPDATED && this.currentSession) {
+                        this.chatService.sendRequest(this.currentSession.id, {
+                            text: "Check the file for my code changes"
+                        });
+                        break;
+                    }
+            }
+        });
     }
 
     protected async doInit(): Promise<void> {

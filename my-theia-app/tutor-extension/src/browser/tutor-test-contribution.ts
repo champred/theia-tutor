@@ -83,7 +83,7 @@ export class TutorTestContribution implements TestContribution, CommandContribut
                         passed++;
                     if (++completed === runItems.length && session && phase?.endsWith('3')) {
                         this.chatService.sendRequest(session.id, {
-                            text: "Check the test results"
+                            text: "Check the most recent test case results"
                         })
                         this.logger.info(`Tests passed: ${passed}/${completed}`);
                     }
