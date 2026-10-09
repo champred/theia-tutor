@@ -14,5 +14,5 @@ export interface TutorTestExecutionResult {
 }
 
 export interface TutorTestRunnerService {
-    runTestCase(testCase: TutorTestCase): Promise<TutorTestExecutionResult>;
+    runTestCase(testCase: TutorTestCase, root: string): Promise<TutorTestExecutionResult>;
 }

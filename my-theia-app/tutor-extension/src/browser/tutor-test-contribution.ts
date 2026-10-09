@@ -1,6 +1,6 @@
 import { CommandContribution, CommandRegistry, ILogger, URI } from '@theia/core';
 import { inject, injectable, interfaces, named, postConstruct } from '@theia/core/shared/inversify';
-import { TestContribution, TestItem, TestRunProfileKind, TestService } from '@theia/test/lib/browser/test-service';
+import { TestContribution, TestExecutionState, TestItem, TestRunProfileKind, TestService } from '@theia/test/lib/browser/test-service';
 import { TutorTestCase } from '../common/tutor-test-case-schema';
 import { TutorTestRunnerService } from '../common/tutor-test-runner-service';
 import { TestControllerImpl, TestItemImpl, TestRunImpl } from './test-controller';
@@ -8,6 +8,7 @@ import { TutorTestCaseLoadResult, TutorTestCaseStore } from '../common/tutor-tes
 import { ChatService } from '@theia/ai-chat';
 import { PromptService, ToolProvider, ToolRequest } from '@theia/ai-core';
 import { tutorSystemVariants } from '../common/tutor-prompt-template';
+import { WorkspaceService } from '@theia/workspace/lib/browser';
 
 export namespace TutorTestCommands {
     export const reloadTestCases = {
@@ -33,6 +34,9 @@ export class TutorTestContribution implements TestContribution, CommandContribut
 
     @inject(PromptService)
     protected readonly promptService!: PromptService
+
+    @inject(WorkspaceService)
+    protected readonly workspaceService!: WorkspaceService
 
     protected readonly testController = new TestControllerImpl('TutorTestController', 'Tutor Test Controller');
     protected nextRunId = 0;
@@ -64,20 +68,24 @@ export class TutorTestContribution implements TestContribution, CommandContribut
                     this.testController,
                     `tutor-run-id-${runId}`,
                     name || `tutor-run-${runId}`,
+                    this.workspaceService.tryGetRoots()[0].resource.path.fsPath(),
                     runItems,
                     this.testRunnerService
                 );
                 this.testController.addRun(testRun);
-                let completed = 0;
-                testRun.onDidChangeTestOutput(_ => {
+                let completed = 0, passed = 0;
+                testRun.onDidChangeTestOutput(result => {
+                    const [item] = result[0];
                     const session = this.chatService.getActiveSession();
                     const phase = this.promptService.getSelectedVariantId(tutorSystemVariants.id);
                     TutorTestFunction.lastRun = testRun;
+                    if (item && testRun.getTestState(item)?.state === TestExecutionState.Passed)
+                        passed++;
                     if (++completed === runItems.length && session && phase?.endsWith('3')) {
                         this.chatService.sendRequest(session.id, {
-                            displayText: "Here are my updated test cases",
-                            text: "~getTutorTests"
+                            text: "Check the test results"
                         })
+                        this.logger.info(`Tests passed: ${passed}/${completed}`);
                     }
                 });
             },

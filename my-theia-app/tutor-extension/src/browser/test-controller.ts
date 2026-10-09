@@ -143,17 +143,20 @@ export class TestRunImpl implements TestRun {
     private readonly onDidChangePropertyEmitter = new Emitter<{ name?: string; isRunning?: boolean; }>();
     onDidChangeProperty: Event<{ name?: string; isRunning?: boolean; }> = this.onDidChangePropertyEmitter.event;
     private cts: CancellationTokenSource;
+    readonly root: string;
 
     constructor(
         readonly controller: TestControllerImpl,
         readonly id: string,
         name: string,
+        root: string,
         private readonly testItems: readonly TestItemImpl[],
         private readonly testRunnerService: TutorTestRunnerService
     ) {
         this.name = name;
         this.isRunning = false;
         this.cts = new CancellationTokenSource();
+        this.root = root.replace('file://', '');
         this.start();
     }
 
@@ -179,7 +182,7 @@ export class TestRunImpl implements TestRun {
         this.setTestState(item, { state: TestExecutionState.Running });
 
         try {
-            const result = await this.testRunnerService.runTestCase(item.testCase);
+            const result = await this.testRunnerService.runTestCase(item.testCase, this.root);
             if (token.isCancellationRequested) {
                 this.setTestState(item, { state: TestExecutionState.Skipped });
                 this.appendOutput('Execution cancelled.', undefined, item);
