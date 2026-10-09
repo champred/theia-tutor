@@ -42,7 +42,7 @@ export class ProgressWidget extends ReactWidget {
     @inject(ChatAgentService)
     protected readonly chatAgentService!: ChatAgentService;
 
-    private currentSession: ChatSession | null = null;
+    private currentSession?: ChatSession;
 
     @postConstruct()
     protected init(): void {
@@ -60,7 +60,24 @@ export class ProgressWidget extends ReactWidget {
 
     protected updateMode = async(mode: string) => {
         const agent = this.chatAgentService.getAgent(TutorChatAgentId);
-        if (!agent) return;
+        const phase = this.currentSession ?
+            this.promptService.getSelectedVariantId(tutorSystemVariants.id)?.slice(-1) : 0;
+        const steps = Number(mode) - Number(phase);
+        if (!agent || steps > 1) throw new Error("Cannot move to that phase");
+
+        if (this.currentSession) {
+            const requests = this.currentSession.model.getRequests();
+            const contents = requests[requests.length-1].response.response.content;
+            const response = contents[contents.length-1].asString?.();
+            if (response?.includes('[FINISHED]')) {
+                const req = await this.chatService.sendRequest(this.currentSession.id, {
+                    text: `Create #currentRelativeDirPath/Summary-${phase}.md`,
+                    displayText: `Ended Phase ${phase}`,
+                    modeId: tutorSystemVariants.defaultVariant.id
+                });
+                await req?.responseCompleted;
+            } else throw new Error("Not ready to move on yet");
+        }
 
         this.currentSession = this.chatService.createSession(
             ChatAgentLocation.Panel,
@@ -110,15 +127,26 @@ function ProgressStage({ number, label, active, click }: {
 
 function ProgressBar({update}: {update: (mode: string)=>Promise<void>}): React.ReactElement {
     const [percent, setPercent] = React.useState(0);
+    const [status, setStatus] = React.useState("Click on the first phase to begin");
     return <>
         <div className="progress" style={{ '--percent': percent + "%" } as React.CSSProperties}></div>
         <div className="stages">
             <ProgressStage number='1' label="Conceptual Logic" active={percent > 0}
-                click={()=>update('1').then(()=>setPercent(1))} />
+                click={() => update('1').then(() => {
+                    setPercent(1);
+                    setStatus("Move onto the next phase when ready");
+                }).catch(setStatus)} />
             <ProgressStage number='2' label="Algorithm Design" active={percent > 49}
-                click={()=>update('2').then(()=>setPercent(50))} />
+                click={() => update('2').then(() => {
+                    setPercent(50);
+                    setStatus("Move onto the next phase when ready");
+                }).catch(setStatus)} />
             <ProgressStage number='3' label="Implement Code" active={percent > 99}
-                click={()=>update('3').then(()=>setPercent(100))} />
+                click={() => update('3').then(() => {
+                    setPercent(100);
+                    setStatus("Move onto the next phase when ready");
+                }).catch(setStatus)} />
         </div>
+        <p className={'status ' + (status.toString().startsWith("Error") && 'fail')}>{status.toString()}</p>
     </>
 }
