@@ -1,5 +1,6 @@
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { ChildProcess, spawn } from 'child_process';
+import { join } from 'path';
 import {
     TutorTestExecutionResult,
     TutorTestRunnerService
@@ -104,7 +105,8 @@ function runProcess(
 
 @injectable()
 export class JavaTutorTestCaseExecutor implements TutorTestCaseExecutor {
-    async execute(testCase: TutorTestCase, workspacePath: string): Promise<TutorTestExecutionResult> {
+    async execute(testCase: TutorTestCase,
+        workspacePath: string): Promise<TutorTestExecutionResult> {
         if (!testCase.expectedOutput.trim()) {
             return {
                 state: 'errored',
@@ -115,9 +117,10 @@ export class JavaTutorTestCaseExecutor implements TutorTestCaseExecutor {
         let actualOutput: string;
         try {
             const result = await runProcess(
-                `${process.env.JAVA_HOME}/bin/java`,
+                join(process.env.JAVA_HOME!, '/bin/java'),
                 ['Solution.java', testCase.input],
-                `${workspacePath}/${testCase.title.substring(0, 6).replace(' ', '-')}`
+                join(workspacePath, testCase.title
+                    .substring(0, 6).replace(' ', '-'))
             );
             actualOutput = result.stdout.trimEnd();
         } catch (error) {

@@ -80,9 +80,9 @@ export class ProgressWidget extends ReactWidget {
         const phase = this.currentSession ?
             this.promptService.getSelectedVariantId(tutorSystemVariants.id)?.slice(-1) : 0;
         const steps = Number(mode) - Number(phase);
-        if (!agent || steps > 1) throw new Error("Cannot move to that phase");
+        // if (!agent || steps > 1) throw new Error("Cannot move to that phase");
 
-        if (this.currentSession) {
+        if (this.currentSession && steps > 0) {
             const requests = this.currentSession.model.getRequests();
             const contents = requests[requests.length-1].response.response.content;
             const response = contents[contents.length-1].asString?.();
@@ -144,7 +144,7 @@ function ProgressStage({ number, label, active, click }: {
 
 function ProgressBar({update}: {update: (mode: string)=>Promise<void>}): React.ReactElement {
     const [percent, setPercent] = React.useState(0);
-    const [status, setStatus] = React.useState("Click on the first phase to begin");
+    const [status, setStatus] = React.useState("Select the phase you want to begin");
     return <>
         <div className="progress" style={{ '--percent': percent + "%" } as React.CSSProperties}></div>
         <div className="stages">

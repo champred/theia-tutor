@@ -85,7 +85,7 @@ export class TutorTestContribution implements TestContribution, CommandContribut
                         this.chatService.sendRequest(session.id, {
                             text: "Check the most recent test case results"
                         })
-                        this.logger.info(`Tests passed: ${passed}/${completed}`);
+                        this.logger.info(`${testRun.root} Tests passed: ${passed}/${completed}`);
                     }
                 });
             },
