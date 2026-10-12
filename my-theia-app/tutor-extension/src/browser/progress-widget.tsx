@@ -8,7 +8,8 @@ import {
     ChatService,
     ChatAgentService,
     ChatAgentLocation,
-    ChatSession
+    ChatSession,
+    ChatRequestInvocation
 } from '@theia/ai-chat';
 import {
     TUTOR_PHASE_1_PROMPT_ID,
@@ -52,14 +53,16 @@ export class ProgressWidget extends ReactWidget {
     @postConstruct()
     protected init(): void {
         this.doInit();
+        let request: Promise<ChatRequestInvocation | undefined> | null = null;
         this.fileService.onDidFilesChange(e => {
             const phase = this.promptService.getSelectedVariantId(tutorSystemVariants.id)?.slice(-1);
             for (let {resource, type} of e.changes) {
                 if (resource.path.name.includes("Solution") && phase === '3' &&
-                    type === FileChangeType.UPDATED && this.currentSession) {
-                        this.chatService.sendRequest(this.currentSession.id, {
-                            text: "Check the file for my code changes"
+                    type === FileChangeType.UPDATED && this.currentSession && !request) {
+                        request = this.chatService.sendRequest(this.currentSession.id, {
+                            text: "Check #currentRelativeDirPath/Solution.java for my code changes"
                         });
+                        request.then(req => req?.responseCompleted).then(_ => request = null);
                         break;
                     }
             }
