@@ -2,6 +2,8 @@ import { ContainerModule } from '@theia/core/shared/inversify';
 import { ProgressWidget } from './progress-widget';
 import { TestWidget } from './test-widget';
 import { ProgressWidgetContribution, TestWidgetContribution } from './widget-contribution';
+import { MarkdownPreviewContribution } from './markdown-preview-contribution';
+import { MarkdownPreviewWidget } from './markdown-preview-widget';
 import { Agent } from '@theia/ai-core';
 import { ChatAgent } from '@theia/ai-chat';
 import { TutorChatAgent } from '../common/tutor-chat-agent';
@@ -35,6 +37,14 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
     bind(WidgetFactory).toDynamicValue(ctx => ({
         id: TestWidget.ID,
         createWidget: () => ctx.container.get<TestWidget>(TestWidget)
+    })).inSingletonScope();
+
+    bindViewContribution(bind, MarkdownPreviewContribution);
+    bind(FrontendApplicationContribution).toService(MarkdownPreviewContribution);
+    bind(MarkdownPreviewWidget).toSelf();
+    bind(WidgetFactory).toDynamicValue(ctx => ({
+        id: MarkdownPreviewWidget.ID,
+        createWidget: () => ctx.container.get<MarkdownPreviewWidget>(MarkdownPreviewWidget)
     })).inSingletonScope();
 
     bind(TutorChatAgent).toSelf().inSingletonScope();

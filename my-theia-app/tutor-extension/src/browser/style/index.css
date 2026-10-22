@@ -181,3 +181,48 @@
     width: 100%;
     box-sizing: border-box;
 }
+
+.tutor-markdown-preview {
+    min-height: 100%;
+    padding: 0 16px 16px;
+}
+
+.tutor-markdown-preview-header {
+    align-items: baseline;
+    border-bottom: 1px solid var(--theia-panel-border);
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+.tutor-markdown-preview-header h2 {
+    margin: 0;
+}
+
+.tutor-markdown-preview-header span {
+    color: var(--theia-descriptionForeground);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tutor-markdown-preview-content {
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    padding: 12px 0;
+}
+
+.tutor-markdown-preview-content img {
+    max-width: 100%;
+}
+
+.tutor-markdown-preview-content pre {
+    overflow-x: auto;
+}
+
+.tutor-markdown-preview-status {
+    color: var(--theia-descriptionForeground);
+    padding: 16px 0;
+}
