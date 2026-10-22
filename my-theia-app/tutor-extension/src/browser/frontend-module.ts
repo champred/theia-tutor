@@ -15,9 +15,14 @@ import {
     RemoteConnectionProvider,
     ServiceConnectionProvider
 } from '@theia/core/lib/browser';
+import {
+    FilterContribution,
+    bindContribution
+} from '@theia/core/lib/common';
 // @ts-ignore
 import '../../src/browser/style/index.css';
 import { DisableAgentContribution } from './disable-agent-contribution';
+import { TerminalFilterContribution } from './terminal-filter-contribution';
 import { bindTutorTests } from './tutor-test-contribution';
 import { TutorTestRunnerService, tutorTestRunnerServicePath } from '../common/tutor-test-runner-service';
 import {  } from '@theia/core/lib/browser';
@@ -60,4 +65,6 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
         return provider.createProxy<TutorTestRunnerService>(tutorTestRunnerServicePath);
     }).inSingletonScope();
     bindTutorTests(bind);
+    bind(TerminalFilterContribution).toSelf().inSingletonScope();
+    bindContribution(bind, TerminalFilterContribution, [FilterContribution]);
 });
