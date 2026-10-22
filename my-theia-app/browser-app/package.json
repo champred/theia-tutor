@@ -19,7 +19,8 @@
     "@theia/ai-ide": "1.76.0",
     "@theia/ai-ollama": "1.76.0",
     "@theia/ai-openai": "1.76.0",
-    "@theia/ai-tool-sketchpad": "1.76.0",
+    "@theia/ai-history": "1.76.0",
+    "@theia/plugin-ext-vscode": "1.76.0",
     "tutor-extension": "0.0.0"
   },
   "devDependencies": {
@@ -28,7 +29,7 @@
   "scripts": {
     "bundle": "npm run rebuild && theia build --mode development",
     "rebuild": "theia rebuild:browser --cacheRoot ..",
-    "start": "theia start",
+    "start": "theia start --plugins=local-dir:../plugins",
     "watch": "npm run rebuild && theia build --watch --mode development"
   },
   "theia": {

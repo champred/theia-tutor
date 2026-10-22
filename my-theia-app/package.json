@@ -7,12 +7,18 @@
   "scripts": {
     "build:browser": "npm --prefix browser-app run bundle",
     "build:electron": "npm --prefix electron-app run bundle",
-    "prepare": "lerna run prepare",
+    "prepare": "lerna run prepare && npm run download",
+    "download": "theia download:plugins",
     "postinstall": "theia check:theia-version",
     "start:browser": "npm --prefix browser-app start",
     "start:electron": "npm --prefix electron-app start",
     "watch:browser": "lerna run --parallel watch --ignore electron-app",
     "watch:electron": "lerna run --parallel watch --ignore browser-app"
+  },
+  "theiaPluginsDir": "plugins",
+  "theiaPlugins": {
+    "java": "https://open-vsx.org/api/redhat/java/linux-x64/1.59.2026102108/file/redhat.java-1.59.2026102108@linux-x64.vsix",
+    "markdown": "https://open-vsx.org/api/shd101wyy/markdown-preview-enhanced/0.8.40/file/shd101wyy.markdown-preview-enhanced-0.8.40.vsix"
   },
   "devDependencies": {
     "lerna": "^8.2.4"
