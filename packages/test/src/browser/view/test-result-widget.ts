@@ -18,7 +18,7 @@ import { BaseWidget, LabelProvider, Message, OpenerService, codicon } from '@the
 import { inject, injectable, postConstruct } from '@theia/core/shared/inversify';
 import { TestOutputUIModel } from './test-output-ui-model';
 import { Disposable, DisposableCollection, nls } from '@theia/core';
-import { TestFailure, TestMessage, TestMessageStackFrame } from '../test-service';
+import { TestMessage, TestMessageStackFrame } from '../test-service';
 import { MarkdownRenderer } from '@theia/core/lib/browser/markdown-rendering/markdown-renderer';
 import { MarkdownString } from '@theia/core/lib/common/markdown-rendering';
 import { URI } from '@theia/core/lib/common/uri';
@@ -58,12 +58,12 @@ export class TestResultWidget extends BaseWidget {
     init(): void {
         this.toDispose.pushAll([Disposable.create(() => this.toDisposeOnRender.dispose()),
         this.uiModel.onDidChangeSelectedTestState(e => {
-            if (TestFailure.is(e)) {
+            if (e && 'messages' in e && Array.isArray(e.messages)) {
                 this.setInput(e.messages);
             }
         })]);
         const currentState = this.uiModel.selectedTestState;
-        if (TestFailure.is(currentState)) {
+        if (currentState && 'messages' in currentState && Array.isArray(currentState.messages)) {
             this.setInput(currentState.messages);
         }
     }
